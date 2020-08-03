@@ -6,7 +6,6 @@ namespace TestTrap\Tests;
 use Illuminate\Database\Events\MigrationsEnded;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Database\SQLiteConnection;
-use Mockery\Mock;
 use TestTrap\GlobalManager;
 
 class QueryWatcherTest extends TestCase

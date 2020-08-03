@@ -46,7 +46,7 @@ class TestTrapExtensionTest extends TestCase
     {
         GlobalManager::set('tt_queries', [
             ['query' => 'sql', 'time' => 1],
-            ['query' => 'sql', 'time' => 2]
+            ['query' => 'sql', 'time' => 2],
         ]);
 
         $extension = new TestTrapExtension(['querySpeed' => 1]);
@@ -64,7 +64,7 @@ class TestTrapExtensionTest extends TestCase
     {
         GlobalManager::set('tt_queries', [
             ['query' => 'sql', 'time' => 1],
-            ['query' => 'sql', 'time' => 1]
+            ['query' => 'sql', 'time' => 1],
         ]);
 
         $extension = new TestTrapExtension(['queryCalled' => 1]);

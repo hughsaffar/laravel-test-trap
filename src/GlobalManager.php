@@ -7,7 +7,7 @@ final class GlobalManager
 {
     private const KEYS = [
         'migrations_ended',
-        'tt_queries'
+        'tt_queries',
     ];
 
     public static function has(string $key): bool
