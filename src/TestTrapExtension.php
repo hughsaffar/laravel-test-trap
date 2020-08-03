@@ -22,7 +22,7 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
 
     public function results(): array
     {
-       return $this->results;
+        return $this->results;
     }
 
     public function executeBeforeTest(string $test): void
@@ -44,7 +44,8 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
 
         if ($this->hasQueryThreshold()) {
             data_set(
-                $this->results, "{$test}.queries",
+                $this->results,
+                "{$test}.queries",
                 $this->testsMatchingQueryThresholds()->groupBy('query')
             );
         }
@@ -233,12 +234,12 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
         $slowTests = collect();
         $repetitiveTests = collect();
 
-        if($this->hasThreshold('querySpeed')) {
+        if ($this->hasThreshold('querySpeed')) {
             $slowTests = $queryTests->where('time', '>', $this->thresholds['querySpeed']);
         }
 
-        if($this->hasThreshold('queryCalled')) {
-            $repetitiveTests = $queryTests->groupBy('query')->filter(function(Collection $queries) {
+        if ($this->hasThreshold('queryCalled')) {
+            $repetitiveTests = $queryTests->groupBy('query')->filter(function (Collection $queries) {
                 return $queries->count() > $this->thresholds['queryCalled'];
             })->flatten(1);
         }
@@ -250,5 +251,4 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
     {
         return $time > $this->thresholds['speed'];
     }
-
 }
