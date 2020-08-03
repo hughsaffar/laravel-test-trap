@@ -1,8 +1,10 @@
 # Speed and SQL trap for Laravel Tests
 
+[![PHP Version](https://img.shields.io/packagist/php-v/hughsaffar/laravel-test-trap)](https://packagist.org/packages/spatie/laravel-test-trap)
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/spatie/laravel-test-trap.svg?style=flat-square)](https://packagist.org/packages/spatie/laravel-test-trap)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/spatie/laravel-test-trap/run-tests?label=tests)](https://github.com/spatie/laravel-test-trap/actions?query=workflow%3Arun-tests+branch%3Amaster)
-[![Total Downloads](https://img.shields.io/packagist/dt/spatie/laravel-test-trap.svg?style=flat-square)](https://packagist.org/packages/spatie/laravel-test-trap)
+[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/hughsaffar/laravel-test-trap/run-tests?label=tests)](https://github.com/spatie/laravel-test-trap/actions?query=workflow%3Arun-tests+branch%3Amaster)
+[![Total Downloads](https://img.shields.io/packagist/dt/hughsaffar/laravel-test-trap.svg?style=flat-square)](https://packagist.org/packages/spatie/laravel-test-trap)
+[![License](https://img.shields.io/packagist/l/hughsaffar/laravel-test-trap)](https://packagist.org/packages/spatie/laravel-test-trap)
 
 Laravel Test Trap will help you trap any slow tests or when a SQL query is slow or run multiple times. 
 Laravel Test Trap is inspired by [phpunit-speedtrap](https://github.com/johnkary/phpunit-speedtrap) and is tailored to be used in Laravel applications. 
