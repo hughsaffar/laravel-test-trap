@@ -1,55 +1,64 @@
-# Speed and SQL trap for Laravel tests
+# Speed and SQL trap for Laravel Tests
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/spatie/laravel-test-trap.svg?style=flat-square)](https://packagist.org/packages/spatie/laravel-test-trap)
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/spatie/laravel-test-trap/run-tests?label=tests)](https://github.com/spatie/laravel-test-trap/actions?query=workflow%3Arun-tests+branch%3Amaster)
 [![Total Downloads](https://img.shields.io/packagist/dt/spatie/laravel-test-trap.svg?style=flat-square)](https://packagist.org/packages/spatie/laravel-test-trap)
 
-
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
-
-## Support us
-
-Learn how to create a package like this one, by watching our premium video course:
-
-[![Laravel Package training](https://spatie.be/github/package-training.jpg)](https://laravelpackage.training)
-
-We invest a lot of resources into creating [best in class open source packages](https://spatie.be/open-source). You can support us by [buying one of our paid products](https://spatie.be/open-source/support-us).
-
-We highly appreciate you sending us a postcard from your hometown, mentioning which of our package(s) you are using. You'll find our address on [our contact page](https://spatie.be/about-us). We publish all received postcards on [our virtual postcard wall](https://spatie.be/open-source/postcards).
+Laravel Test Trap will help you trap any slow tests or when a SQL query is slow or run multiple times. 
+Laravel Test Trap is inspired by [phpunit-speedtrap](https://github.com/johnkary/phpunit-speedtrap) and is tailored to be used in Laravel applications. 
 
 ## Installation
 
 You can install the package via composer:
 
 ```bash
-composer require spatie/package-laravel-test-trap-laravel
-```
-
-You can publish and run the migrations with:
-
-```bash
-php artisan vendor:publish --provider="Laravel-test-trap\Laravel Tet Trap\Laravel Tet TrapServiceProvider" --tag="migrations"
-php artisan migrate
+composer require --dev hughsaffar/laravel-test-trap
 ```
 
 You can publish the config file with:
 ```bash
-php artisan vendor:publish --provider="Laravel-test-trap\Laravel Tet Trap\Laravel Tet TrapServiceProvider" --tag="config"
+php artisan vendor:publish --provider="TestTrap\TestTrapServiceProvider" --tag="config"
 ```
 
 This is the contents of the published config file:
 
 ```php
 return [
+  'environment_name' => env('TEST_TRAP_ENVIRONMENT', 'testing')
 ];
 ```
 
+This config can be used if you name your test environment, something other than `testing`.
+
 ## Usage
 
-``` php
-$laravel-test-trap = new Laravel-test-trap\Laravel Tet Trap();
-echo $laravel-test-trap->echoPhrase('Hello, Laravel-test-trap!');
+Laravel Test Trap comes with an PHPUnit extension class that you need to add to your `phpunit.xml`.
+
+``` xml
+<extensions>
+    <extension class="TestTrap\TestTrapExtension">
+        <arguments>
+            <array>
+                <element key="speed">
+                    <double>500</double>
+                </element>
+                <element key="queryCalled">
+                    <integer>10</integer>
+                </element>
+                <element key="querySpeed">
+                    <double>1000</double>
+                </element>
+            </array>
+        </arguments>
+    </extension>
+</extensions>
 ```
+
+In this example we ask Test Trap to report any tests that:
+
+- Take more than 500ms to run
+- Or run a single query more than 10 times in a test
+- Or a query takes more than a second (1000ms) to run
 
 ## Testing
 
@@ -67,7 +76,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ## Security
 
-If you discover any security related issues, please email freek@spatie.be instead of using the issue tracker.
+If you discover any security related issues, please email hs@houmaan.ca instead of using the issue tracker.
 
 ## Credits
 

@@ -14,6 +14,10 @@ final class TestTrapServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        $this->publishes([
+            __DIR__.'/../config/test-trap.php' => config_path('test-trap.php'),
+        ], 'config');
+
         if (! $this->app->environment(config('test-trap.environment_name', 'testing'))) {
             return;
         }

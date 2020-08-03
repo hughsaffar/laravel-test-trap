@@ -1,6 +1,6 @@
 {
     "name": "hughsaffar/laravel-test-trap",
-    "description": "Speed and SQL trap for Laravel tests",
+    "description": "Laravel Test Trap",
     "keywords": [
         "laravel",
         "test",
