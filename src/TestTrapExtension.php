@@ -218,7 +218,7 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
                 $climate->tab(2)->out($test['name']);
                 foreach ($test['queries'] as $query => $data) {
                     $query = strlen($query) > 100 ? Str::substr($query, 0, 100) . '...' : $query;
-                    $climate->tab(3)->out(sprintf('%d - %s', $data['called'], $query));
+                    $climate->tab(3)->out(sprintf('%sx - %s', number_format(data_get($data, 'called')), $query));
                 }
             }
         }
