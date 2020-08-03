@@ -54,9 +54,9 @@ class TestTrapExtensionTest extends TestCase
 
         $result = $extension->results();
 
-        $this->assertEquals(1, data_get($result, 'test.queries.sql')->count());
-        $this->assertEquals('sql', data_get($result, 'test.queries.sql.0.query'));
-        $this->assertEquals(2, data_get($result, 'test.queries.sql.0.time'));
+        $this->assertEquals(1, data_get($result, 'test.slowQueries.sql')->count());
+        $this->assertEquals('sql', data_get($result, 'test.slowQueries.sql.0.query'));
+        $this->assertEquals(2, data_get($result, 'test.slowQueries.sql.0.time'));
     }
 
     /** @test */
@@ -72,11 +72,11 @@ class TestTrapExtensionTest extends TestCase
 
         $result = $extension->results();
 
-        $this->assertEquals(2, data_get($result, 'test.queries.sql')->count());
-        $this->assertEquals('sql', data_get($result, 'test.queries.sql.0.query'));
-        $this->assertEquals(1, data_get($result, 'test.queries.sql.0.time'));
-        $this->assertEquals('sql', data_get($result, 'test.queries.sql.1.query'));
-        $this->assertEquals(1, data_get($result, 'test.queries.sql.1.time'));
+        $this->assertEquals(2, data_get($result, 'test.repetitiveQueries.sql')->count());
+        $this->assertEquals('sql', data_get($result, 'test.repetitiveQueries.sql.0.query'));
+        $this->assertEquals(1, data_get($result, 'test.repetitiveQueries.sql.0.time'));
+        $this->assertEquals('sql', data_get($result, 'test.repetitiveQueries.sql.1.query'));
+        $this->assertEquals(1, data_get($result, 'test.repetitiveQueries.sql.1.time'));
     }
 
     /** @test */

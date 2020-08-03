@@ -42,11 +42,21 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
             return;
         }
 
-        if ($this->hasQueryThreshold()) {
+        $queries = collect(GlobalManager::get('tt_queries'));
+
+        if ($this->hasThreshold('querySpeed')) {
             data_set(
                 $this->results,
-                "{$test}.queries",
-                $this->testsMatchingQueryThresholds()->groupBy('query')
+                "{$test}.slowQueries",
+                $this->slowQueries($queries)->groupBy('query')
+            );
+        }
+
+        if ($this->hasThreshold('queryCalled')) {
+            data_set(
+                $this->results,
+                "{$test}.repetitiveQueries",
+                $this->repetitiveQueries($queries)->groupBy('query')
             );
         }
 
@@ -64,12 +74,8 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
         $tests = $this->formatTests();
 
         $slowTests = $this->hasThreshold('speed') ? $this->slowTests($tests) : collect();
-
-        $queryTests = $this->hasQueryThreshold() ? $this->queryTests($tests) : collect();
-
-        $slowQueryTests = $this->hasThreshold('querySpeed') ? $this->slowQueryTests($queryTests) : collect();
-        $repetitiveQueryTests = $this->hasThreshold('queryCalled') ? $this->repetitiveQueryTests($queryTests) : collect();
-
+        $slowQueryTests = $this->hasThreshold('querySpeed') ? $this->slowQueryTests() : collect();
+        $repetitiveQueryTests = $this->hasThreshold('queryCalled') ? $this->repetitiveQueryTests() : collect();
         $climate = new CLImate();
         $climate->br();
 
@@ -95,12 +101,6 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
     {
         return isset($this->thresholds[$key]);
     }
-
-    private function hasQueryThreshold(): bool
-    {
-        return $this->hasThreshold('queryCalled') || $this->hasThreshold('querySpeed');
-    }
-
     private function formatTests(): Collection
     {
         return collect($this->results)->map(function ($item, $key) {
@@ -128,42 +128,33 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
         return $tests->where('time', '>', $this->thresholds['speed']);
     }
 
-    private function queryTests(Collection $tests): Collection
+    private function slowQueryTests(): Collection
     {
-        return $tests->filter(function ($test) {
-            return $test['queries']->isNotEmpty();
+        return collect($this->results)->filter(function ($test) {
+            return $test['slowQueries']->isNotEmpty();
+        })->map(function ($test) {
+            return data_get($test, 'slowQueries')->map(function ($queries) {
+                return $queries->filter(function ($query) {
+                    return data_get($query, 'time') > $this->thresholds['querySpeed'];
+                })->average('time');
+            });
         });
     }
 
-    private function slowQueryTests(Collection $queryTests): Collection
+
+    private function repetitiveQueryTests(): Collection
     {
-        return $queryTests->map(function ($test) {
-            $slowQueries = data_get($test, 'queries')->where('time', '>', $this->thresholds['querySpeed']);
-
-            if ($slowQueries->isEmpty()) {
-                return;
-            }
-
-            data_set($test, 'queries', $slowQueries);
-
-            return $test;
-        })->filter();
-    }
-
-
-    private function repetitiveQueryTests(Collection $queryTests): Collection
-    {
-        return $queryTests->map(function ($test) {
-            $repetitiveQueries = data_get($test, 'queries')->where('called', '>', $this->thresholds['queryCalled']);
-
-            if ($repetitiveQueries->isEmpty()) {
-                return;
-            }
-
-            data_set($test, 'queries', $repetitiveQueries);
-
-            return $test;
-        })->filter();
+        return collect($this->results)->filter(function ($test) {
+            return $test['repetitiveQueries']->isNotEmpty();
+        })->map(function ($test) {
+            return data_get($test, 'repetitiveQueries')->filter(function ($queries) {
+                return $queries->count() > $this->thresholds['queryCalled'];
+            });
+        })->map(function ($queries) {
+            return $queries->map(function ($query) {
+                return $query->count();
+            });
+        });
     }
 
     private function renderSlowTests(Collection $slowTests, CLImate $climate): void
@@ -190,19 +181,18 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
         $climate->bold(sprintf('Slow Queries (>%dms)', $this->thresholds['querySpeed']));
         $climate->border();
 
-        foreach ($slowQueryTests->groupBy('class') as $key => $tests) {
-            $climate->tab(1)->out($key)->bold();
-            foreach ($tests as $test) {
-                $climate->tab(2)->out($test['name']);
-                foreach ($test['queries'] as $query => $data) {
-                    $query = strlen($query) > 100 ? Str::substr($query, 0, 100) . '...' : $query;
-                    $climate->tab(3)->out(sprintf('%fms (average) - %s', $data['time'], $query));
-                }
+        foreach ($slowQueryTests as $testName => $queries) {
+            [$testClass, $testMethod] = explode('::', $testName);
+            $climate->tab(1)->out($testClass)->bold();
+            $climate->tab(2)->out($testMethod)->bold();
+            foreach ($queries as $query => $time) {
+                $query = strlen($query) > 100 ? Str::substr($query, 0, 100) . '...' : $query;
+                $climate->tab(3)->out(sprintf('%fms (average) - %s', $time, $query));
             }
         }
 
         $climate->border();
-        $climate->out(sprintf('Total: %fms', $slowQueryTests->pluck('queries')->flatten(1)->sum('time')));
+        $climate->out(sprintf('Total: %fms', $slowQueryTests->flatten(1)->sum()));
         $climate->border();
     }
 
@@ -212,43 +202,36 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
         $climate->bold(sprintf('Repetitive Queries (>%dx)', $this->thresholds['queryCalled']));
         $climate->border();
 
-        foreach ($repetitiveQueryTests->groupBy('class') as $key => $tests) {
-            $climate->tab(1)->out($key)->bold();
-            foreach ($tests as $test) {
-                $climate->tab(2)->out($test['name']);
-                foreach ($test['queries'] as $query => $data) {
-                    $query = strlen($query) > 100 ? Str::substr($query, 0, 100) . '...' : $query;
-                    $climate->tab(3)->out(sprintf('%sx - %s', number_format(data_get($data, 'called')), $query));
-                }
+        foreach ($repetitiveQueryTests as $testName => $queries) {
+            [$testClass, $testMethod] = explode('::', $testName);
+            $climate->tab(1)->out($testClass)->bold();
+            $climate->tab(2)->out($testMethod)->bold();
+
+            foreach ($queries as $query => $count) {
+                $query = strlen($query) > 100 ? Str::substr($query, 0, 100) . '...' : $query;
+                $climate->tab(3)->out(sprintf('%sx - %s', number_format($count), $query));
             }
         }
 
         $climate->border();
-        $climate->out(sprintf('Total: %dx', $repetitiveQueryTests->pluck('queries')->flatten(1)->sum('called')));
+        $climate->out(sprintf('Total: %dx', $repetitiveQueryTests->flatten(1)->sum()));
         $climate->border();
-    }
-
-    private function testsMatchingQueryThresholds(): Collection
-    {
-        $queryTests = collect(GlobalManager::get('tt_queries'));
-        $slowTests = collect();
-        $repetitiveTests = collect();
-
-        if ($this->hasThreshold('querySpeed')) {
-            $slowTests = $queryTests->where('time', '>', $this->thresholds['querySpeed']);
-        }
-
-        if ($this->hasThreshold('queryCalled')) {
-            $repetitiveTests = $queryTests->groupBy('query')->filter(function (Collection $queries) {
-                return $queries->count() > $this->thresholds['queryCalled'];
-            })->flatten(1);
-        }
-
-        return $slowTests->merge($repetitiveTests);
     }
 
     private function isSlowTest(float $time): bool
     {
         return $time > $this->thresholds['speed'];
+    }
+
+    private function slowQueries(Collection $queries): Collection
+    {
+        return $queries->where('time', '>', $this->thresholds['querySpeed']);
+    }
+
+    private function repetitiveQueries(Collection $queries): Collection
+    {
+        return $queries->groupBy('query')->filter(function (Collection $queries) {
+            return $queries->count() > $this->thresholds['queryCalled'];
+        })->flatten(1);
     }
 }
