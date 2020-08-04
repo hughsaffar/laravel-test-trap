@@ -8,16 +8,19 @@ use Illuminate\Support\Str;
 use League\CLImate\CLImate;
 use PHPUnit\Runner\AfterLastTestHook;
 use PHPUnit\Runner\AfterTestHook;
+use PHPUnit\Runner\BeforeFirstTestHook;
 use PHPUnit\Runner\BeforeTestHook;
 
-final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, AfterTestHook
+final class TestTrapExtension implements BeforeFirstTestHook, AfterLastTestHook, BeforeTestHook, AfterTestHook
 {
     private $results = [];
     private $thresholds;
+    private $disabled;
 
     public function __construct($thresholds = [])
     {
         $this->thresholds = $thresholds;
+        $this->disabled = env('TEST_TRAP_DISABLE', false);
     }
 
     public function results(): array
@@ -25,8 +28,17 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
         return $this->results;
     }
 
+    public function executeBeforeFirstTest(): void
+    {
+        $this->disabled = env('TEST_TRAP_DISABLE', false);
+    }
+
     public function executeBeforeTest(string $test): void
     {
+        if ($this->disabled) {
+            return;
+        }
+
         if (! $this->hasArguments()) {
             return;
         }
@@ -38,6 +50,10 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
 
     public function executeAfterTest(string $test, float $time): void
     {
+        if ($this->disabled) {
+            return;
+        }
+
         if (! $this->hasArguments()) {
             return;
         }
@@ -67,6 +83,10 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
 
     public function executeAfterLastTest(): void
     {
+        if ($this->disabled) {
+            return;
+        }
+
         if (! $this->hasArguments()) {
             return;
         }
@@ -101,6 +121,7 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
     {
         return isset($this->thresholds[$key]);
     }
+
     private function formatTests(): Collection
     {
         return collect($this->results)->map(function ($item, $key) {
@@ -160,25 +181,25 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
     private function renderSlowTests(Collection $slowTests, CLImate $climate): void
     {
         $climate->border();
-        $climate->bold()->out(sprintf('Slow Tests (>%dms)', $this->thresholds['speed']));
+        $climate->bold()->out(sprintf('Slow Tests (> %f ms)', $this->thresholds['speed']));
         $climate->border();
 
         foreach ($slowTests->groupBy('class') as $testClass => $slowTest) {
             $climate->tab()->out($testClass);
             foreach ($slowTest as $test) {
-                $climate->tab(2)->out(sprintf('%fms - %s', $test['time'], $test['name']));
+                $climate->tab(2)->out(sprintf('%f ms - %s', $test['time'], $test['name']));
             }
         }
 
         $climate->border();
-        $climate->out(sprintf('Total: %fms', $slowTests->sum('time')));
+        $climate->out(sprintf('Total: %f ms', $slowTests->sum('time')));
         $climate->border();
     }
 
     private function renderSlowQueryTests(Collection $slowQueryTests, CLImate $climate)
     {
         $climate->border();
-        $climate->bold(sprintf('Slow Queries (>%dms)', $this->thresholds['querySpeed']));
+        $climate->bold(sprintf('Slow Queries (> %f ms)', $this->thresholds['querySpeed']));
         $climate->border();
 
         foreach ($slowQueryTests as $testName => $queries) {
@@ -187,19 +208,19 @@ final class TestTrapExtension implements AfterLastTestHook, BeforeTestHook, Afte
             $climate->tab(2)->out($testMethod)->bold();
             foreach ($queries as $query => $time) {
                 $query = strlen($query) > 100 ? Str::substr($query, 0, 100) . '...' : $query;
-                $climate->tab(3)->out(sprintf('%fms (average) - %s', $time, $query));
+                $climate->tab(3)->out(sprintf('%f ms (average) - %s', $time, $query));
             }
         }
 
         $climate->border();
-        $climate->out(sprintf('Total: %fms', $slowQueryTests->flatten(1)->sum()));
+        $climate->out(sprintf('Total: %f ms', $slowQueryTests->flatten(1)->sum()));
         $climate->border();
     }
 
     private function renderRepetitiveQueryTests(Collection $repetitiveQueryTests, CLImate $climate)
     {
         $climate->border();
-        $climate->bold(sprintf('Repetitive Queries (>%dx)', $this->thresholds['queryCalled']));
+        $climate->bold(sprintf('Repetitive Queries (> %dx)', $this->thresholds['queryCalled']));
         $climate->border();
 
         foreach ($repetitiveQueryTests as $testName => $queries) {

@@ -10,11 +10,24 @@ class TestTrapExtensionTest extends TestCase
     {
         parent::setUp();
         GlobalManager::flush();
+        putenv('TEST_TRAP_DISABLE=false');
     }
 
     /** @test */
     public function it_does_not_set_global_variables_if_there_is_no_threshold_arguments()
     {
+        $extension = new TestTrapExtension();
+        $extension->executeBeforeTest('test');
+
+        $this->assertNull(GlobalManager::get('migrations_ended'));
+        $this->assertNull(GlobalManager::get('tt_queries'));
+    }
+
+    /** @test */
+    public function it_does_not_set_global_variables_test_trap_is_disabled()
+    {
+        putenv('TEST_TRAP_DISABLE=true');
+
         $extension = new TestTrapExtension();
         $extension->executeBeforeTest('test');
 

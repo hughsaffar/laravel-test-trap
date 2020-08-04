@@ -27,7 +27,7 @@ class QueryWatcherTest extends TestCase
     }
 
     /** @test */
-    public function it_does_not_record_migration_related_queries()
+    public function it_does_not_record_migration_related_queries_with_default_config()
     {
         $databaseConnection = \Mockery::mock(SQLiteConnection::class)
             ->shouldReceive('getName')
@@ -37,6 +37,21 @@ class QueryWatcherTest extends TestCase
         event(new QueryExecuted('sql', [], 1, $databaseConnection));
 
         $this->assertEmpty(GlobalManager::get('tt_queries'));
+    }
+
+    /** @test */
+    public function it_does_record_migration_related_queries_with_updated_config()
+    {
+        $this->app['config']->set('test-trap.ignore_migrations_queries', false);
+
+        $databaseConnection = \Mockery::mock(SQLiteConnection::class)
+            ->shouldReceive('getName')
+            ->andReturn('ConnectionName')
+            ->getMock();
+
+        event(new QueryExecuted('sql', [], 1, $databaseConnection));
+
+        $this->assertEquals(['query' => 'sql', 'time' => 1], data_get(GlobalManager::get('tt_queries'), '0'));
     }
 
     /** @test */

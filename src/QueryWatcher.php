@@ -23,7 +23,7 @@ final class QueryWatcher
         });
 
         $this->app['events']->listen(QueryExecuted::class, function (QueryExecuted $event) {
-            if (! GlobalManager::get('migrations_ended')) {
+            if (config('test-trap.ignore_migrations_queries', true) && ! GlobalManager::get('migrations_ended')) {
                 return;
             }
 

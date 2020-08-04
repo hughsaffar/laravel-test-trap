@@ -18,6 +18,10 @@ final class TestTrapServiceProvider extends ServiceProvider
             __DIR__.'/../config/test-trap.php' => config_path('test-trap.php'),
         ], 'config');
 
+        if (! config('test-trap.enable', true)) {
+            return;
+        }
+
         if (! $this->app->environment(config('test-trap.environment_name', 'testing'))) {
             return;
         }
