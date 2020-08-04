@@ -1,9 +1,9 @@
 # Speed and SQL trap for Laravel Tests
 
 [![PHP Version](https://img.shields.io/packagist/php-v/hughsaffar/laravel-test-trap)](https://packagist.org/packages/spatie/laravel-test-trap)
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/hughsaffar/laravel-test-trap)](https://packagist.org/packages/spatie/laravel-test-trap)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/hughsaffar/laravel-test-trap)](https://packagist.org/packages/hughsaffar/laravel-test-trap)
 [![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/hughsaffar/laravel-test-trap/Tests)](https://github.com/hughsaffar/laravel-test-trap/actions?query=workflow%3ATests+branch%3Amaster)
-[![License](https://img.shields.io/packagist/l/hughsaffar/laravel-test-trap)](https://packagist.org/packages/spatie/laravel-test-trap)
+[![License](https://img.shields.io/packagist/l/hughsaffar/laravel-test-trap)](https://packagist.org/packages/hughsaffar/laravel-test-trap)
 
 ![Screenshot of terminal using Laravel Test Trap](https://i.imgur.com/a6hoowt.png)
 
