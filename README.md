@@ -72,7 +72,7 @@ If you do not want Laravel Test Trap to always run with your tests, you can simp
 ```xml
 <php>
    ...
-   <server name="TEST_TRAP_DISABLE" value="false"/>
+   <server name="TEST_TRAP_DISABLE" value="true"/>
    ...
 </php>
 ```
