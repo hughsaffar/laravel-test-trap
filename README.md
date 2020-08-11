@@ -7,7 +7,7 @@
 
 ![Screenshot of terminal using Laravel Test Trap](https://i.imgur.com/a6hoowt.png)
 
-Laravel Test Trap will help you trap any slow tests or when a SQL query is slow oOr run multiple times. 
+Laravel Test Trap will help you trap any slow tests or when a SQL query is slow or runs multiple times. 
 Laravel Test Trap is inspired by [phpunit-speedtrap](https://github.com/johnkary/phpunit-speedtrap) and is tailored to be used in Laravel applications. 
 
 ## Installation
